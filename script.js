@@ -88,7 +88,7 @@ async function fetchCryptoPrices() {
     } catch (error) {
         console.error('Error fetching crypto prices:', error);
         // Check if API key is still default
-        if (API_NINJAS_KEY === 'YOUR_API_KEY_HERE') {
+        if (API_NINJAS_KEY === 'jUx4LE3OfZAeRuhrzc73fw==mKvNwbYZU6Ha7wiS') {
             console.error('⚠️ Please add your API Ninjas key at the top of this file!');
         }
         // Fallback to demo data
