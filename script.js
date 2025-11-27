@@ -42,44 +42,36 @@ function toggleMenu() {
 }
 
 // ========================================
-// LIVE CRYPTO PRICE TICKER - API NINJAS VERSION
+// LIVE CRYPTO PRICE TICKER - FIXED!
 // ========================================
 let cryptoPrices = {};
 
 async function fetchCryptoPrices() {
     try {
-        // API Ninjas supports multiple cryptocurrencies
-        const cryptos = ['BTC', 'ETH', 'ADA', 'SOL', 'XRP'];
-        const pricePromises = cryptos.map(symbol => 
-            fetch(`https://api.api-ninjas.com/v1/cryptoprice?symbol=${symbol}`, {
-                headers: {
-                    'X-Api-Key': API_NINJAS_KEY
-                }
-            }).then(res => res.json())
-        );
+        // Fetch Bitcoin and Ethereum prices
+        const btcResponse = await fetch('https://api.api-ninjas.com/v1/cryptoprice?symbol=BTC', {
+            headers: {
+                'X-Api-Key': API_NINJAS_KEY
+            }
+        });
+        
+        const ethResponse = await fetch('https://api.api-ninjas.com/v1/cryptoprice?symbol=ETH', {
+            headers: {
+                'X-Api-Key': API_NINJAS_KEY
+            }
+        });
 
-        const results = await Promise.all(pricePromises);
+        const btcData = await btcResponse.json();
+        const ethData = await ethResponse.json();
         
         // Store prices in our format
         cryptoPrices = {
             bitcoin: { 
-                usd: results[0].price,
+                usd: btcData.price,
                 usd_24h_change: Math.random() * 10 - 5 // API Ninjas doesn't provide 24h change
             },
             ethereum: { 
-                usd: results[1].price,
-                usd_24h_change: Math.random() * 10 - 5
-            },
-            cardano: { 
-                usd: results[2].price,
-                usd_24h_change: Math.random() * 10 - 5
-            },
-            solana: { 
-                usd: results[3].price,
-                usd_24h_change: Math.random() * 10 - 5
-            },
-            ripple: { 
-                usd: results[4].price,
+                usd: ethData.price,
                 usd_24h_change: Math.random() * 10 - 5
             }
         };
@@ -88,49 +80,65 @@ async function fetchCryptoPrices() {
     } catch (error) {
         console.error('Error fetching crypto prices:', error);
         // Check if API key is still default
-        if (API_NINJAS_KEY === 'jUx4LE3OfZAeRuhrzc73fw==mKvNwbYZU6Ha7wiS') {
+        if (API_NINJAS_KEY === 'YOUR_API_KEY_HERE') {
             console.error('⚠️ Please add your API Ninjas key at the top of this file!');
         }
         // Fallback to demo data
         cryptoPrices = {
             bitcoin: { usd: 45000, usd_24h_change: 2.5 },
-            ethereum: { usd: 3200, usd_24h_change: -1.2 },
-            cardano: { usd: 0.58, usd_24h_change: 4.1 },
-            solana: { usd: 110, usd_24h_change: 3.8 },
-            ripple: { usd: 0.52, usd_24h_change: -0.5 }
+            ethereum: { usd: 3200, usd_24h_change: -1.2 }
         };
         updatePriceTicker();
     }
 }
 
 function updatePriceTicker() {
-    const tickerContainer = document.getElementById('cryptoTicker');
-    if (!tickerContainer) return;
+    // Update Bitcoin price
+    const btcPriceEl = document.getElementById('btcPrice');
+    const btcChangeEl = document.getElementById('btcChange');
     
-    const coins = [
-        { id: 'bitcoin', name: 'BTC', symbol: '₿' },
-        { id: 'ethereum', name: 'ETH', symbol: 'Ξ' },
-        { id: 'cardano', name: 'ADA', symbol: '₳' },
-        { id: 'solana', name: 'SOL', symbol: '◎' },
-        { id: 'ripple', name: 'XRP', symbol: '✕' }
-    ];
+    if (btcPriceEl && cryptoPrices.bitcoin) {
+        btcPriceEl.textContent = '$' + cryptoPrices.bitcoin.usd.toLocaleString();
+        
+        if (btcChangeEl) {
+            const change = cryptoPrices.bitcoin.usd_24h_change || 0;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeIcon = change >= 0 ? '▲' : '▼';
+            btcChangeEl.className = 'ticker-change ' + changeClass;
+            btcChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+        }
+    }
     
-    tickerContainer.innerHTML = coins.map(coin => {
-        const data = cryptoPrices[coin.id];
-        if (!data) return '';
+    // Update Ethereum price
+    const ethPriceEl = document.getElementById('ethPrice');
+    const ethChangeEl = document.getElementById('ethChange');
+    
+    if (ethPriceEl && cryptoPrices.ethereum) {
+        ethPriceEl.textContent = '$' + cryptoPrices.ethereum.usd.toLocaleString();
         
-        const change = data.usd_24h_change || 0;
-        const changeClass = change >= 0 ? 'positive' : 'negative';
-        const changeIcon = change >= 0 ? '▲' : '▼';
-        
-        return `
-            <div class="ticker-item">
-                <span class="ticker-symbol">${coin.symbol} ${coin.name}</span>
-                <span class="ticker-price">$${data.usd.toLocaleString()}</span>
-                <span class="ticker-change ${changeClass}">${changeIcon} ${Math.abs(change).toFixed(2)}%</span>
-            </div>
-        `;
-    }).join('');
+        if (ethChangeEl) {
+            const change = cryptoPrices.ethereum.usd_24h_change || 0;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeIcon = change >= 0 ? '▲' : '▼';
+            ethChangeEl.className = 'ticker-change ' + changeClass;
+            ethChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+        }
+    }
+    
+    // Update Market Cap (calculated estimate)
+    const marketCapEl = document.getElementById('marketCap');
+    if (marketCapEl && cryptoPrices.bitcoin && cryptoPrices.ethereum) {
+        // Rough estimate: BTC market cap ~900B, ETH ~400B
+        const estimatedMarketCap = (cryptoPrices.bitcoin.usd * 19500000 + cryptoPrices.ethereum.usd * 120000000) / 1000000000000;
+        marketCapEl.textContent = '$' + estimatedMarketCap.toFixed(2) + 'T';
+    }
+    
+    // Update last update time
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    if (lastUpdateEl) {
+        const now = new Date();
+        lastUpdateEl.textContent = 'Updated: ' + now.toLocaleTimeString();
+    }
 }
 
 // Update prices every 60 seconds
@@ -584,11 +592,11 @@ const sectionObserver = new IntersectionObserver((entries) => {
 sections.forEach(section => sectionObserver.observe(section));
 
 // ========================================
-// ROI CALCULATOR
+// ROI CALCULATOR - FIXED!
 // ========================================
 function calculateROI() {
     const investment = parseFloat(document.getElementById('investment').value);
-    const type = document.getElementById('investmentType').value);
+    const type = document.getElementById('investmentType').value;  // FIXED: Removed extra parenthesis
     const years = parseFloat(document.getElementById('years').value);
     
     if (!investment || !years || investment <= 0 || years <= 0) {
@@ -864,3 +872,4 @@ window.addEventListener('load', () => {
         }
     }
 });
+
