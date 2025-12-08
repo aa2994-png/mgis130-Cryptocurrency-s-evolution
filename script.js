@@ -7,6 +7,43 @@
 const API_NINJAS_KEY = '3bfVQ5lCQSwpSW8uQ1WYgQ==tSIcWPx3Qatwfht1';
 
 // ========================================
+// PAGE NAVIGATION SYSTEM
+// ========================================
+function showPage(pageName) {
+    // Hide all pages
+    const allPages = document.querySelectorAll('.page-content');
+    allPages.forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show selected page
+    const selectedPage = document.getElementById('page-' + pageName);
+    if (selectedPage) {
+        selectedPage.classList.add('active');
+    }
+    
+    // Update active nav link
+    const allNavLinks = document.querySelectorAll('.nav-link');
+    allNavLinks.forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    const activeLink = document.querySelector(`.nav-link[data-page="${pageName}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Close mobile menu if open
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks) {
+        navLinks.classList.remove('active');
+    }
+}
+
+// ========================================
 // THEME TOGGLE FUNCTIONALITY
 // ========================================
 function toggleTheme() {
@@ -147,35 +184,6 @@ function updatePriceTicker() {
 setInterval(fetchCryptoPrices, 60000);
 
 // ========================================
-// BREADCRUMB UPDATE BASED ON SCROLL
-// ========================================
-const sections = document.querySelectorAll('section');
-const breadcrumb = document.getElementById('currentSection');
-
-const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const sectionId = entry.target.id;
-            const sectionNames = {
-                'home': 'Welcome',
-                'basics': 'Understanding the Basics',
-                'pros-cons': 'Pros and Cons',
-                'global': 'Global Impact',
-                'features': 'Key Features',
-                'market': 'Market and Adoption',
-                'resources': 'Resources',
-                'contact': 'Contact Us'
-            };
-            if (breadcrumb) {
-                breadcrumb.textContent = sectionNames[sectionId] || 'Welcome';
-            }
-        }
-    });
-}, { threshold: 0.5 });
-
-sections.forEach(section => sectionObserver.observe(section));
-
-// ========================================
 // ROI CALCULATOR
 // ========================================
 function calculateROI() {
@@ -252,26 +260,6 @@ function submitContact() {
 
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-
-// ========================================
-// SMOOTH SCROLLING
-// ========================================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-            const navLinks = document.getElementById('navLinks');
-            if (navLinks) {
-                navLinks.classList.remove('active');
-            }
-        }
-    });
-});
 
 // ========================================
 // ANIMATE ELEMENTS ON SCROLL
@@ -413,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Fetch initial crypto prices
     fetchCryptoPrices();
+    
+    // Show home page by default
+    showPage('home');
     
     console.log('%c🔗 CryptoShifts', 'font-size: 24px; font-weight: bold; color: #6366f1;');
     console.log('%cUnderstanding the Future of Money', 'font-size: 14px; color: #8b5cf6;');

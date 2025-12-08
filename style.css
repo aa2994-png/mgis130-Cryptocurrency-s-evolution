@@ -157,6 +157,7 @@ body.dark-mode nav {
     color: inherit;
     font-weight: 500;
     transition: color 0.3s;
+    cursor: pointer;
 }
 
 .nav-links a:hover {
@@ -181,27 +182,11 @@ body.dark-mode nav {
 }
 
 /* ========================================
-   BREADCRUMB NAVIGATION
-   ======================================== */
-.breadcrumb {
-    max-width: 1200px;
-    margin: 150px auto 20px;
-    padding: 0 2rem;
-    font-size: 0.9rem;
-    color: #64748b;
-}
-
-.breadcrumb a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-/* ========================================
    MAIN CONTAINER
    ======================================== */
 .container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 150px auto 0;
     padding: 2rem;
 }
 
@@ -302,6 +287,12 @@ body.dark-mode .section-market {
 /* ========================================
    TYPOGRAPHY
    ======================================== */
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: inherit;
+}
+
 h2 {
     font-size: 2rem;
     margin-bottom: 1.5rem;
@@ -636,6 +627,154 @@ footer h4 {
 }
 
 /* ========================================
+   PAGE NAVIGATION SYSTEM
+   ======================================== */
+.page-content {
+    display: none;
+    opacity: 0;
+}
+
+.page-content.active {
+    display: block;
+    opacity: 1;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* ========================================
+   NAVIGATION ACTIVE STATE
+   ======================================== */
+.nav-links a.active {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+body.dark-mode .nav-links a.active {
+    color: var(--accent-color);
+}
+
+/* ========================================
+   CTA BUTTONS FOR HOME PAGE
+   ======================================== */
+.cta-button,
+.cta-button-secondary {
+    display: inline-block;
+    padding: 1rem 2rem;
+    margin: 0.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.cta-button {
+    background: white;
+    color: var(--primary-color);
+}
+
+.cta-button:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+.cta-button-secondary {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+}
+
+.cta-button-secondary:hover {
+    background: white;
+    color: var(--primary-color);
+}
+
+/* ========================================
+   CARD LINKS
+   ======================================== */
+.card-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.card-link:hover {
+    color: var(--secondary-color);
+    transform: translateX(5px);
+}
+
+/* ========================================
+   NAVIGATION BUTTONS
+   ======================================== */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    padding: 1rem 2rem;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.nav-btn:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+}
+
+/* ========================================
+   HOME PAGE SECTION STYLING
+   ======================================== */
+.section-home {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-left: 5px solid var(--primary-color);
+}
+
+body.dark-mode .section-home {
+    background: var(--card-dark);
+    opacity: 0.95;
+}
+
+/* ========================================
+   RESOURCES PAGE STYLING
+   ======================================== */
+.section-resources {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-left: 5px solid #f59e0b;
+}
+
+body.dark-mode .section-resources {
+    background: var(--card-dark);
+    opacity: 0.95;
+}
+
+/* ========================================
+   CONTACT PAGE STYLING
+   ======================================== */
+.section-contact {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border-left: 5px solid var(--primary-color);
+}
+
+body.dark-mode .section-contact {
+    background: var(--card-dark);
+    opacity: 0.95;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 @media (max-width: 768px) {
@@ -657,7 +796,7 @@ footer h4 {
         top: 40px;
     }
     
-    .breadcrumb {
+    .container {
         margin-top: 120px;
     }
 
@@ -684,6 +823,10 @@ footer h4 {
 
     section {
         padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
     }
 
     h2 {
@@ -717,6 +860,14 @@ footer h4 {
     .tooltip .tooltiptext {
         width: 200px;
         margin-left: -100px;
+    }
+    
+    .navigation-buttons {
+        flex-direction: column;
+    }
+    
+    .nav-btn {
+        width: 100%;
     }
 }
 
@@ -766,7 +917,6 @@ footer h4 {
 @media print {
     nav,
     .theme-toggle,
-    .breadcrumb,
     .contact-form,
     .crypto-ticker {
         display: none;
