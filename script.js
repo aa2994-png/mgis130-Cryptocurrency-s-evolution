@@ -74,10 +74,12 @@ function toggleMenu() {
 }
 
 // ========================================
-// LIVE CRYPTO PRICE TICKER - SIMPLIFIED
+// LIVE CRYPTO PRICE TICKER WITH COUNTDOWN
 // ========================================
 let cryptoPrices = {};
 let lastFetchTime = null;
+let nextUpdateTime = null;
+const UPDATE_INTERVAL = 60000; // 60 seconds
 
 async function fetchCryptoPrices() {
     try {
@@ -112,8 +114,9 @@ async function fetchCryptoPrices() {
             }
         };
         
-        // Store the fetch time
+        // Store the fetch time and calculate next update time
         lastFetchTime = new Date();
+        nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         
         updatePriceTicker();
         
@@ -131,6 +134,7 @@ async function fetchCryptoPrices() {
             ethereum: { usd: 3450 }
         };
         lastFetchTime = new Date();
+        nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         updatePriceTicker();
     }
 }
@@ -165,20 +169,40 @@ function updatePriceTicker() {
     }
 }
 
-// Real-time clock that updates every second
-function updateClock() {
+// Countdown timer with price update time
+function updateCountdown() {
     const lastUpdateEl = document.getElementById('lastUpdate');
-    if (lastUpdateEl && lastFetchTime) {
-        const now = new Date();
-        lastUpdateEl.textContent = 'Updated: ' + now.toLocaleTimeString();
+    
+    if (!lastUpdateEl || !lastFetchTime || !nextUpdateTime) {
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = 'Loading prices...';
+        }
+        return;
+    }
+    
+    const now = new Date();
+    const secondsUntilUpdate = Math.max(0, Math.floor((nextUpdateTime - now) / 1000));
+    
+    // Format the last update time
+    const timeString = lastFetchTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+    });
+    
+    // Display with countdown
+    if (secondsUntilUpdate > 0) {
+        lastUpdateEl.textContent = `Prices from ${timeString} • Next update: ${secondsUntilUpdate}s`;
+    } else {
+        lastUpdateEl.textContent = `Prices from ${timeString} • Updating...`;
     }
 }
 
-// Update the clock every second
-setInterval(updateClock, 1000);
+// Update the countdown every second
+setInterval(updateCountdown, 1000);
 
 // Fetch new prices every 60 seconds
-setInterval(fetchCryptoPrices, 60000);
+setInterval(fetchCryptoPrices, UPDATE_INTERVAL);
 
 // ========================================
 // ROI CALCULATOR
@@ -354,8 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch initial crypto prices
     fetchCryptoPrices();
     
-    // Start the real-time clock
-    updateClock();
+    // Start the countdown timer
+    updateCountdown();
     
     // Show home page by default
     showPage('home');
