@@ -84,9 +84,6 @@ let updateIntervalId = null;
 
 async function fetchCryptoPrices() {
     try {
-        // Set the fetch time BEFORE making the request
-        const fetchStartTime = new Date();
-        
         // Fetch Bitcoin data
         const btcResponse = await fetch('https://api.api-ninjas.com/v1/cryptoprice?symbol=BTCUSDT', {
             headers: {
@@ -118,8 +115,8 @@ async function fetchCryptoPrices() {
             }
         };
         
-        // Use the time we started the fetch as the reference point
-        lastFetchTime = fetchStartTime;
+        // Set the fetch time AFTER we get the data (now)
+        lastFetchTime = new Date();
         nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         
         updatePriceTicker();
@@ -134,12 +131,11 @@ async function fetchCryptoPrices() {
     } catch (error) {
         console.error('Error fetching crypto prices:', error);
         // Fallback to demo data if API fails
-        const fetchStartTime = new Date();
         cryptoPrices = {
             bitcoin: { usd: 96500 },
             ethereum: { usd: 3450 }
         };
-        lastFetchTime = fetchStartTime;
+        lastFetchTime = new Date();
         nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         updatePriceTicker();
     }
@@ -193,6 +189,7 @@ function updateCountdown() {
     const timeString = lastFetchTime.toLocaleTimeString('en-US', { 
         hour: 'numeric', 
         minute: '2-digit',
+        second: '2-digit',
         hour12: true 
     });
     
