@@ -780,6 +780,91 @@ body.dark-mode .section-contact {
 }
 
 /* ========================================
+   CONTENT PARAGRAPH STYLING
+   ======================================== */
+.content-paragraph {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+body.dark-mode .content-paragraph {
+    background: rgba(30, 41, 59, 0.3);
+}
+
+.content-paragraph:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.content-paragraph h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.content-paragraph .icon {
+    font-size: 1.5rem;
+    display: inline-block;
+}
+
+.content-paragraph p {
+    line-height: 1.8;
+    margin-bottom: 0.5rem;
+}
+
+.content-paragraph ul {
+    margin-left: 2rem;
+    margin-top: 1rem;
+}
+
+.content-paragraph li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+/* Specific styling for Basics page */
+.section-basics .content-paragraph {
+    border-left-color: #f59e0b;
+}
+
+.section-basics .content-paragraph h3 {
+    color: #f59e0b;
+}
+
+/* Specific styling for Pros & Cons page */
+.section-pros-cons .content-paragraph {
+    border-left-color: #3b82f6;
+}
+
+.section-pros-cons .content-paragraph h3 {
+    color: #3b82f6;
+}
+
+/* Specific styling for Features page */
+.section-features .content-paragraph {
+    border-left-color: #a855f7;
+}
+
+.section-features .content-paragraph h3 {
+    color: #a855f7;
+}
+
+/* Specific styling for Market page */
+.section-market .content-paragraph {
+    border-left-color: #f43f5e;
+}
+
+.section-market .content-paragraph h3 {
+    color: #f43f5e;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 @media (max-width: 768px) {
@@ -880,6 +965,18 @@ body.dark-mode .section-contact {
         display: block;
         width: 100%;
         margin: 0.5rem 0;
+    }
+
+    .content-paragraph {
+        padding: 1rem;
+    }
+    
+    .content-paragraph h3 {
+        font-size: 1.1rem;
+    }
+    
+    .content-paragraph .icon {
+        font-size: 1.2rem;
     }
 }
 
