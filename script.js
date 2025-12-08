@@ -74,7 +74,7 @@ function toggleMenu() {
 }
 
 // ========================================
-// LIVE CRYPTO PRICE TICKER - UPDATED WITH REAL-TIME CLOCK
+// LIVE CRYPTO PRICE TICKER - SIMPLIFIED
 // ========================================
 let cryptoPrices = {};
 let lastFetchTime = null;
@@ -102,15 +102,13 @@ async function fetchCryptoPrices() {
         const btcData = await btcResponse.json();
         const ethData = await ethResponse.json();
         
-        // Store prices using the new API format
+        // Store prices
         cryptoPrices = {
             bitcoin: { 
-                usd: parseFloat(btcData.price),
-                usd_24h_change: parseFloat(btcData['24h_price_change_percent'])
+                usd: parseFloat(btcData.price)
             },
             ethereum: { 
-                usd: parseFloat(ethData.price),
-                usd_24h_change: parseFloat(ethData['24h_price_change_percent'])
+                usd: parseFloat(ethData.price)
             }
         };
         
@@ -129,8 +127,8 @@ async function fetchCryptoPrices() {
         console.error('Error fetching crypto prices:', error);
         // Fallback to demo data if API fails
         cryptoPrices = {
-            bitcoin: { usd: 96500, usd_24h_change: 2.45 },
-            ethereum: { usd: 3450, usd_24h_change: -0.85 }
+            bitcoin: { usd: 96500 },
+            ethereum: { usd: 3450 }
         };
         lastFetchTime = new Date();
         updatePriceTicker();
@@ -140,54 +138,22 @@ async function fetchCryptoPrices() {
 function updatePriceTicker() {
     // Update Bitcoin price
     const btcPriceEl = document.getElementById('btcPrice');
-    const btcChangeEl = document.getElementById('btcChange');
     
     if (btcPriceEl && cryptoPrices.bitcoin) {
         btcPriceEl.textContent = '$' + cryptoPrices.bitcoin.usd.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        
-        if (btcChangeEl) {
-            const change = cryptoPrices.bitcoin.usd_24h_change || 0;
-            const changeClass = change >= 0 ? 'positive' : 'negative';
-            const changeIcon = change >= 0 ? '▲' : '▼';
-            btcChangeEl.className = 'ticker-change ' + changeClass;
-            
-            // Show the change even if it's 0, with better formatting
-            if (change === 0) {
-                btcChangeEl.textContent = '— 0.00%';
-                btcChangeEl.className = 'ticker-change neutral';
-            } else {
-                btcChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
-            }
-        }
     }
     
     // Update Ethereum price
     const ethPriceEl = document.getElementById('ethPrice');
-    const ethChangeEl = document.getElementById('ethChange');
     
     if (ethPriceEl && cryptoPrices.ethereum) {
         ethPriceEl.textContent = '$' + cryptoPrices.ethereum.usd.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        
-        if (ethChangeEl) {
-            const change = cryptoPrices.ethereum.usd_24h_change || 0;
-            const changeClass = change >= 0 ? 'positive' : 'negative';
-            const changeIcon = change >= 0 ? '▲' : '▼';
-            ethChangeEl.className = 'ticker-change ' + changeClass;
-            
-            // Show the change even if it's 0, with better formatting
-            if (change === 0) {
-                ethChangeEl.textContent = '— 0.00%';
-                ethChangeEl.className = 'ticker-change neutral';
-            } else {
-                ethChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
-            }
-        }
     }
     
     // Update Market Cap (calculated estimate)
