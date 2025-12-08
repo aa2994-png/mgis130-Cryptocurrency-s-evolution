@@ -80,9 +80,13 @@ let cryptoPrices = {};
 let lastFetchTime = null;
 let nextUpdateTime = null;
 const UPDATE_INTERVAL = 60000; // 60 seconds
+let updateIntervalId = null;
 
 async function fetchCryptoPrices() {
     try {
+        // Set the fetch time BEFORE making the request
+        const fetchStartTime = new Date();
+        
         // Fetch Bitcoin data
         const btcResponse = await fetch('https://api.api-ninjas.com/v1/cryptoprice?symbol=BTCUSDT', {
             headers: {
@@ -114,8 +118,8 @@ async function fetchCryptoPrices() {
             }
         };
         
-        // Store the fetch time and calculate next update time
-        lastFetchTime = new Date();
+        // Use the time we started the fetch as the reference point
+        lastFetchTime = fetchStartTime;
         nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         
         updatePriceTicker();
@@ -123,17 +127,19 @@ async function fetchCryptoPrices() {
         console.log('Crypto Prices Updated:', {
             bitcoin: cryptoPrices.bitcoin,
             ethereum: cryptoPrices.ethereum,
-            timestamp: lastFetchTime.toLocaleTimeString()
+            timestamp: lastFetchTime.toLocaleTimeString(),
+            nextUpdate: nextUpdateTime.toLocaleTimeString()
         });
         
     } catch (error) {
         console.error('Error fetching crypto prices:', error);
         // Fallback to demo data if API fails
+        const fetchStartTime = new Date();
         cryptoPrices = {
             bitcoin: { usd: 96500 },
             ethereum: { usd: 3450 }
         };
-        lastFetchTime = new Date();
+        lastFetchTime = fetchStartTime;
         nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         updatePriceTicker();
     }
@@ -198,11 +204,22 @@ function updateCountdown() {
     }
 }
 
+// Initialize the price fetching system
+function initializePriceFetching() {
+    // Clear any existing interval
+    if (updateIntervalId) {
+        clearInterval(updateIntervalId);
+    }
+    
+    // Fetch prices immediately
+    fetchCryptoPrices();
+    
+    // Set up interval to fetch prices every 60 seconds
+    updateIntervalId = setInterval(fetchCryptoPrices, UPDATE_INTERVAL);
+}
+
 // Update the countdown every second
 setInterval(updateCountdown, 1000);
-
-// Fetch new prices every 60 seconds
-setInterval(fetchCryptoPrices, UPDATE_INTERVAL);
 
 // ========================================
 // ROI CALCULATOR
@@ -375,8 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('loaded');
     console.log('🚀 CryptoShifts - Loaded Successfully!');
     
-    // Fetch initial crypto prices
-    fetchCryptoPrices();
+    // Initialize price fetching system
+    initializePriceFetching();
     
     // Start the countdown timer
     updateCountdown();
