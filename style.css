@@ -661,9 +661,14 @@ body.dark-mode .nav-links a.active {
     padding: 1rem 2rem;
     margin: 0.5rem;
     border-radius: 8px;
-    text-decoration: none;
     font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
     transition: all 0.3s;
+    position: relative;
+    z-index: 2;
+    border: none;
+    font-family: inherit;
 }
 
 .cta-button {
@@ -868,6 +873,13 @@ body.dark-mode .section-contact {
     
     .nav-btn {
         width: 100%;
+    }
+
+    .cta-button,
+    .cta-button-secondary {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
     }
 }
 
