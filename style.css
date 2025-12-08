@@ -104,6 +104,16 @@ body.dark-mode {
     color: #fecdd3;
 }
 
+.ticker-change.neutral {
+    background: rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+}
+
+body.dark-mode .ticker-change.neutral {
+    background: rgba(100, 116, 139, 0.3);
+    color: #94a3b8;
+}
+
 .ticker-update {
     font-size: 0.8rem;
     opacity: 0.8;
@@ -341,6 +351,18 @@ body.dark-mode .card {
     margin-bottom: 0.5rem;
 }
 
+/* Email links in team section */
+.card a[href^="mailto:"] {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.card a[href^="mailto:"]:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
 /* ========================================
    TOOLTIP FEATURE
    ======================================== */
@@ -508,57 +530,6 @@ body.dark-mode .calculator select {
 
 .resource-list a:hover {
     text-decoration: underline;
-}
-
-/* ========================================
-   CONTACT FORM
-   ======================================== */
-.contact-form {
-    max-width: 600px;
-    margin: 2rem auto;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    padding: 1rem;
-    margin: 0.5rem 0;
-    border: 2px solid var(--border-light);
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 1rem;
-    background: var(--bg-light);
-    color: var(--text-light);
-}
-
-body.dark-mode .contact-form input,
-body.dark-mode .contact-form textarea {
-    background: var(--card-dark);
-    border-color: var(--border-dark);
-    color: var(--text-dark);
-}
-
-.contact-form textarea {
-    min-height: 150px;
-    resize: vertical;
-}
-
-.contact-form button {
-    width: 100%;
-    padding: 1rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-}
-
-.contact-form button:hover {
-    background: var(--secondary-color);
-    transform: scale(1.02);
 }
 
 /* ========================================
@@ -1009,8 +980,7 @@ body.dark-mode .content-paragraph {
         padding: 1.5rem;
     }
 
-    .calculator,
-    .contact-form {
+    .calculator {
         padding: 1.5rem;
     }
     
@@ -1026,7 +996,6 @@ body.dark-mode .content-paragraph {
 @media print {
     nav,
     .theme-toggle,
-    .contact-form,
     .crypto-ticker {
         display: none;
     }

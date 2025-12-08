@@ -74,9 +74,10 @@ function toggleMenu() {
 }
 
 // ========================================
-// LIVE CRYPTO PRICE TICKER - UPDATED FOR NEW API
+// LIVE CRYPTO PRICE TICKER - UPDATED WITH REAL-TIME CLOCK
 // ========================================
 let cryptoPrices = {};
+let lastFetchTime = null;
 
 async function fetchCryptoPrices() {
     try {
@@ -113,14 +114,25 @@ async function fetchCryptoPrices() {
             }
         };
         
+        // Store the fetch time
+        lastFetchTime = new Date();
+        
         updatePriceTicker();
+        
+        console.log('Crypto Prices Updated:', {
+            bitcoin: cryptoPrices.bitcoin,
+            ethereum: cryptoPrices.ethereum,
+            timestamp: lastFetchTime.toLocaleTimeString()
+        });
+        
     } catch (error) {
         console.error('Error fetching crypto prices:', error);
         // Fallback to demo data if API fails
         cryptoPrices = {
-            bitcoin: { usd: 91000, usd_24h_change: 1.85 },
-            ethereum: { usd: 3200, usd_24h_change: -1.2 }
+            bitcoin: { usd: 96500, usd_24h_change: 2.45 },
+            ethereum: { usd: 3450, usd_24h_change: -0.85 }
         };
+        lastFetchTime = new Date();
         updatePriceTicker();
     }
 }
@@ -141,7 +153,14 @@ function updatePriceTicker() {
             const changeClass = change >= 0 ? 'positive' : 'negative';
             const changeIcon = change >= 0 ? '▲' : '▼';
             btcChangeEl.className = 'ticker-change ' + changeClass;
-            btcChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+            
+            // Show the change even if it's 0, with better formatting
+            if (change === 0) {
+                btcChangeEl.textContent = '— 0.00%';
+                btcChangeEl.className = 'ticker-change neutral';
+            } else {
+                btcChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+            }
         }
     }
     
@@ -160,7 +179,14 @@ function updatePriceTicker() {
             const changeClass = change >= 0 ? 'positive' : 'negative';
             const changeIcon = change >= 0 ? '▲' : '▼';
             ethChangeEl.className = 'ticker-change ' + changeClass;
-            ethChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+            
+            // Show the change even if it's 0, with better formatting
+            if (change === 0) {
+                ethChangeEl.textContent = '— 0.00%';
+                ethChangeEl.className = 'ticker-change neutral';
+            } else {
+                ethChangeEl.textContent = changeIcon + ' ' + Math.abs(change).toFixed(2) + '%';
+            }
         }
     }
     
@@ -171,16 +197,21 @@ function updatePriceTicker() {
         const estimatedMarketCap = (cryptoPrices.bitcoin.usd * 19500000 + cryptoPrices.ethereum.usd * 120000000) / 1000000000000;
         marketCapEl.textContent = '$' + estimatedMarketCap.toFixed(2) + 'T';
     }
-    
-    // Update last update time
+}
+
+// Real-time clock that updates every second
+function updateClock() {
     const lastUpdateEl = document.getElementById('lastUpdate');
-    if (lastUpdateEl) {
+    if (lastUpdateEl && lastFetchTime) {
         const now = new Date();
         lastUpdateEl.textContent = 'Updated: ' + now.toLocaleTimeString();
     }
 }
 
-// Update prices every 60 seconds
+// Update the clock every second
+setInterval(updateClock, 1000);
+
+// Fetch new prices every 60 seconds
 setInterval(fetchCryptoPrices, 60000);
 
 // ========================================
@@ -223,49 +254,10 @@ function calculateROI() {
 }
 
 // ========================================
-// CONTACT FORM SUBMISSION
-// ========================================
-function submitContact() {
-    const name = document.getElementById('contactName').value.trim();
-    const email = document.getElementById('contactEmail').value.trim();
-    const subject = document.getElementById('contactSubject').value.trim();
-    const message = document.getElementById('contactMessage').value.trim();
-
-    if (!name || !email || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-    }
-
-    const resultDiv = document.getElementById('contactResult');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-        <p><strong>Thank you, ${name}!</strong></p>
-        <p>Your message has been received. We'll respond to ${email} shortly.</p>
-    `;
-
-    document.getElementById('contactName').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactSubject').value = '';
-    document.getElementById('contactMessage').value = '';
-
-    setTimeout(() => {
-        resultDiv.style.display = 'none';
-    }, 5000);
-
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// ========================================
 // ANIMATE ELEMENTS ON SCROLL
 // ========================================
 const animateOnScroll = () => {
-    const elements = document.querySelectorAll('.card, .timeline-item');
+    const elements = document.querySelectorAll('.card, .timeline-item, .content-paragraph');
     elements.forEach(element => {
         const elementTop = element.getBoundingClientRect().top;
         const elementBottom = element.getBoundingClientRect().bottom;
@@ -277,7 +269,7 @@ const animateOnScroll = () => {
     });
 };
 
-document.querySelectorAll('.card, .timeline-item').forEach(element => {
+document.querySelectorAll('.card, .timeline-item, .content-paragraph').forEach(element => {
     element.style.opacity = '0';
     element.style.transform = 'translateY(20px)';
     element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -301,12 +293,6 @@ document.addEventListener('keydown', (e) => {
         document.activeElement.id === 'investmentType'
     )) {
         calculateROI();
-    }
-    
-    if (e.key === 'Enter' && e.ctrlKey) {
-        if (document.activeElement.id === 'contactMessage') {
-            submitContact();
-        }
     }
 });
 
@@ -401,6 +387,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Fetch initial crypto prices
     fetchCryptoPrices();
+    
+    // Start the real-time clock
+    updateClock();
     
     // Show home page by default
     showPage('home');
