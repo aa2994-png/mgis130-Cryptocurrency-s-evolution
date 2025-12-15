@@ -8,8 +8,33 @@
     <meta name="author" content="CryptoShifts Team - RIT">
     <title>CryptoShifts - The Future of Money</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="light-mode">
+    <!-- XP and Level Bar -->
+    <div class="xp-bar-container">
+        <div class="xp-info">
+            <span class="level-badge" id="levelBadge">Level 1</span>
+            <span class="xp-text"><span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP</span>
+            <button class="badges-btn" onclick="openBadgeModal()">🏆 Badges (<span id="badgeCount">0</span>/12)</button>
+        </div>
+        <div class="xp-progress-bar">
+            <div class="xp-progress-fill" id="xpProgressFill"></div>
+        </div>
+    </div>
+
+    <!-- Badge Modal -->
+    <div id="badgeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBadgeModal()">&times;</span>
+            <h2>🏆 Your Achievements</h2>
+            <div class="badges-grid" id="badgesGrid"></div>
+        </div>
+    </div>
+
+    <!-- XP Notification -->
+    <div id="xpNotification" class="xp-notification"></div>
+
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
@@ -126,6 +151,12 @@
                 <h2>How Blockchain Works</h2>
                 <p>Blockchain functions as a decentralized database that verifies, secures, and transfers data without traditional intermediaries. Each transaction is recorded in a "block" and linked to previous transactions, creating an immutable chain. This technology reshapes business practices by enabling peer-to-peer transactions, reducing costs, and increasing transparency.</p>
 
+                <!-- Basics Quiz -->
+                <div class="quiz-section">
+                    <h2>🎯 Test Your Knowledge: Basics</h2>
+                    <div id="quiz-basics" class="quiz-embedded"></div>
+                </div>
+
                 <div class="navigation-buttons">
                     <a href="javascript:void(0)" onclick="showPage('home')" class="nav-btn">← Home</a>
                     <a href="javascript:void(0)" onclick="showPage('pros-cons')" class="nav-btn">Pros & Cons →</a>
@@ -182,6 +213,12 @@
                     </ul>
                 </div>
 
+                <!-- Pros & Cons Quiz -->
+                <div class="quiz-section">
+                    <h2>🎯 Test Your Knowledge: Pros & Cons</h2>
+                    <div id="quiz-pros-cons" class="quiz-embedded"></div>
+                </div>
+
                 <div class="navigation-buttons">
                     <a href="javascript:void(0)" onclick="showPage('basics')" class="nav-btn">← Basics</a>
                     <a href="javascript:void(0)" onclick="showPage('global')" class="nav-btn">Global Impact →</a>
@@ -233,6 +270,12 @@
                         <h3>🌏 Asia</h3>
                         <p>China leads CBDC development with the digital yuan, while other nations like Singapore embrace crypto innovation through regulatory sandboxes.</p>
                     </div>
+                </div>
+
+                <!-- Global Quiz -->
+                <div class="quiz-section">
+                    <h2>🎯 Test Your Knowledge: Global Impact</h2>
+                    <div id="quiz-global" class="quiz-embedded"></div>
                 </div>
 
                 <div class="navigation-buttons">
@@ -310,6 +353,44 @@
                 <h2>Current Market Status</h2>
                 <p>Despite increasing merchant adoption and blockchain payment innovations, cryptocurrency activities remain primarily focused on investment and speculation rather than everyday transactions. The market is maturing, but mainstream adoption as a medium of exchange faces several hurdles.</p>
 
+                <!-- Interactive Price Chart -->
+                <div class="chart-section">
+                    <h2>📈 Live Price Charts</h2>
+                    <div class="chart-controls">
+                        <div class="crypto-selector">
+                            <button class="crypto-btn active" onclick="switchCrypto('bitcoin')" data-crypto="bitcoin">Bitcoin</button>
+                            <button class="crypto-btn" onclick="switchCrypto('ethereum')" data-crypto="ethereum">Ethereum</button>
+                        </div>
+                        <div class="timeframe-selector">
+                            <button class="time-btn active" onclick="changeTimeframe('1H')" data-time="1H">1H</button>
+                            <button class="time-btn" onclick="changeTimeframe('24H')" data-time="24H">24H</button>
+                            <button class="time-btn" onclick="changeTimeframe('7D')" data-time="7D">7D</button>
+                            <button class="time-btn" onclick="changeTimeframe('30D')" data-time="30D">30D</button>
+                        </div>
+                    </div>
+                    <div class="chart-stats">
+                        <div class="stat">
+                            <span class="stat-label">Current Price:</span>
+                            <span class="stat-value" id="chartPrice">$0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">24h Change:</span>
+                            <span class="stat-value" id="chartChange">0%</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">24h High:</span>
+                            <span class="stat-value" id="chartHigh">$0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">24h Low:</span>
+                            <span class="stat-value" id="chartLow">$0</span>
+                        </div>
+                    </div>
+                    <div class="chart-container-wrapper">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+
                 <div class="content-paragraph">
                     <h3><span class="icon">📊</span> Market Size</h3>
                     <p>The global cryptocurrency market capitalization exceeds $2 trillion, with Bitcoin and Ethereum dominating market share. However, daily transaction volumes for purchases remain relatively small compared to traditional financial systems.</p>
@@ -338,6 +419,12 @@
                     <li><strong>Volatile cryptocurrencies</strong> will remain important for innovation, speculation, and specific use cases</li>
                     <li><strong>Hybrid systems</strong> will leverage the strengths of both traditional and digital finance</li>
                 </ul>
+
+                <!-- Market Quiz -->
+                <div class="quiz-section">
+                    <h2>🎯 Test Your Knowledge: Market & Adoption</h2>
+                    <div id="quiz-market" class="quiz-embedded"></div>
+                </div>
 
                 <div class="navigation-buttons">
                     <a href="javascript:void(0)" onclick="showPage('features')" class="nav-btn">← Features</a>

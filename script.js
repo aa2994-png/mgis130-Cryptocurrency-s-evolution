@@ -1,10 +1,783 @@
-// CryptoShifts - Enhanced with API Ninjas Bitcoin API
+// CryptoShifts - Enhanced with Gamification, Quizzes, Charts & API
 // Created by: Mili, Haleigh, Boris, and Amina - RIT 2025
 
 // ========================================
 // API CONFIGURATION
 // ========================================
 const API_NINJAS_KEY = '3bfVQ5lCQSwpSW8uQ1WYgQ==tSIcWPx3Qatwfht1';
+
+// ========================================
+// GAMIFICATION SYSTEM - XP & LEVELS
+// ========================================
+const LEVELS = [
+    { level: 1, xpRequired: 0, title: "Crypto Newbie" },
+    { level: 2, xpRequired: 100, title: "Beginner Trader" },
+    { level: 3, xpRequired: 250, title: "Learning Investor" },
+    { level: 4, xpRequired: 450, title: "Crypto Enthusiast" },
+    { level: 5, xpRequired: 700, title: "Market Analyst" },
+    { level: 6, xpRequired: 1000, title: "Blockchain Expert" },
+    { level: 7, xpRequired: 1400, title: "DeFi Pioneer" },
+    { level: 8, xpRequired: 1900, title: "Crypto Veteran" },
+    { level: 9, xpRequired: 2500, title: "Master Trader" },
+    { level: 10, xpRequired: 3200, title: "Crypto Master" }
+];
+
+const BADGES = [
+    { id: 'first_visit', name: 'First Steps', icon: '🚀', description: 'Visit CryptoShifts for the first time', xp: 10 },
+    { id: 'page_explorer', name: 'Page Explorer', icon: '🗺️', description: 'Visit all pages', xp: 50 },
+    { id: 'quiz_starter', name: 'Quiz Starter', icon: '📝', description: 'Complete your first quiz', xp: 50 },
+    { id: 'quiz_master', name: 'Quiz Master', icon: '🎓', description: 'Complete all 4 quizzes', xp: 100 },
+    { id: 'perfect_score', name: 'Perfect Score', icon: '💯', description: 'Get 100% on any quiz', xp: 75 },
+    { id: 'calculator_pro', name: 'Calculator Pro', icon: '🧮', description: 'Use the ROI calculator', xp: 20 },
+    { id: 'market_analyst', name: 'Market Analyst', icon: '📊', description: 'View interactive price charts', xp: 20 },
+    { id: 'tooltip_hunter', name: 'Tooltip Hunter', icon: '🔍', description: 'Discover 5 tooltips', xp: 15 },
+    { id: 'level_5', name: 'Expert Status', icon: '⭐', description: 'Reach Level 5', xp: 0 },
+    { id: 'level_7', name: 'Elite Trader', icon: '💎', description: 'Reach Level 7', xp: 0 },
+    { id: 'level_10', name: 'Crypto Master', icon: '👑', description: 'Reach Level 10', xp: 0 },
+    { id: 'dedicated_learner', name: 'Dedicated Learner', icon: '📚', description: 'Spend 30 minutes on the site', xp: 50 }
+];
+
+let gameState = {
+    xp: 0,
+    level: 1,
+    badges: [],
+    pagesVisited: [],
+    quizzesCompleted: [],
+    tooltipsDiscovered: 0,
+    calculatorUsed: false,
+    chartViewed: false,
+    sessionStartTime: Date.now()
+};
+
+// ========================================
+// STORAGE FUNCTIONS
+// ========================================
+function saveGameState() {
+    localStorage.setItem('cryptoShiftsGame', JSON.stringify(gameState));
+}
+
+function loadGameState() {
+    const saved = localStorage.getItem('cryptoShiftsGame');
+    if (saved) {
+        gameState = JSON.parse(saved);
+        gameState.sessionStartTime = Date.now(); // Reset session timer
+    }
+    updateXPDisplay();
+    updateBadgeCount();
+}
+
+// ========================================
+// XP SYSTEM FUNCTIONS
+// ========================================
+function addXP(amount, reason) {
+    gameState.xp += amount;
+    
+    // Check for level up
+    const newLevel = calculateLevel(gameState.xp);
+    const leveledUp = newLevel > gameState.level;
+    gameState.level = newLevel;
+    
+    // Show notification
+    showXPNotification(amount, reason, leveledUp);
+    
+    // Update display
+    updateXPDisplay();
+    saveGameState();
+    
+    // Check for level badges
+    if (leveledUp) {
+        checkLevelBadges();
+    }
+}
+
+function calculateLevel(xp) {
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (xp >= LEVELS[i].xpRequired) {
+            return LEVELS[i].level;
+        }
+    }
+    return 1;
+}
+
+function updateXPDisplay() {
+    const currentLevel = LEVELS.find(l => l.level === gameState.level);
+    const nextLevel = LEVELS.find(l => l.level === gameState.level + 1);
+    
+    document.getElementById('levelBadge').textContent = `Level ${gameState.level}`;
+    document.getElementById('currentXP').textContent = gameState.xp;
+    
+    if (nextLevel) {
+        document.getElementById('nextLevelXP').textContent = nextLevel.xpRequired;
+        const progress = ((gameState.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
+        document.getElementById('xpProgressFill').style.width = Math.min(progress, 100) + '%';
+    } else {
+        document.getElementById('nextLevelXP').textContent = 'MAX';
+        document.getElementById('xpProgressFill').style.width = '100%';
+    }
+}
+
+function showXPNotification(xp, reason, levelUp = false) {
+    const notification = document.getElementById('xpNotification');
+    
+    if (levelUp) {
+        notification.innerHTML = `
+            <div class="level-up">
+                🎉 LEVEL UP! 🎉<br>
+                Level ${gameState.level}<br>
+                <small>${LEVELS.find(l => l.level === gameState.level).title}</small>
+            </div>
+        `;
+        notification.className = 'xp-notification level-up-notification show';
+    } else {
+        notification.innerHTML = `+${xp} XP<br><small>${reason}</small>`;
+        notification.className = 'xp-notification show';
+    }
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// ========================================
+// BADGE SYSTEM FUNCTIONS
+// ========================================
+function unlockBadge(badgeId) {
+    if (gameState.badges.includes(badgeId)) return;
+    
+    const badge = BADGES.find(b => b.id === badgeId);
+    if (!badge) return;
+    
+    gameState.badges.push(badgeId);
+    
+    if (badge.xp > 0) {
+        addXP(badge.xp, badge.name + ' Unlocked!');
+    }
+    
+    showBadgeUnlockNotification(badge);
+    updateBadgeCount();
+    saveGameState();
+}
+
+function showBadgeUnlockNotification(badge) {
+    const notification = document.getElementById('xpNotification');
+    notification.innerHTML = `
+        <div class="badge-unlock">
+            <div class="badge-icon">${badge.icon}</div>
+            <div><strong>Badge Unlocked!</strong><br>${badge.name}</div>
+        </div>
+    `;
+    notification.className = 'xp-notification badge-notification show';
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 4000);
+}
+
+function updateBadgeCount() {
+    document.getElementById('badgeCount').textContent = gameState.badges.length;
+}
+
+function openBadgeModal() {
+    const modal = document.getElementById('badgeModal');
+    const grid = document.getElementById('badgesGrid');
+    
+    grid.innerHTML = '';
+    
+    BADGES.forEach(badge => {
+        const unlocked = gameState.badges.includes(badge.id);
+        const badgeCard = document.createElement('div');
+        badgeCard.className = 'badge-card' + (unlocked ? ' unlocked' : ' locked');
+        badgeCard.innerHTML = `
+            <div class="badge-icon-large">${unlocked ? badge.icon : '🔒'}</div>
+            <h4>${badge.name}</h4>
+            <p>${badge.description}</p>
+            ${badge.xp > 0 ? `<span class="badge-xp">+${badge.xp} XP</span>` : ''}
+        `;
+        grid.appendChild(badgeCard);
+    });
+    
+    modal.style.display = 'block';
+}
+
+function closeBadgeModal() {
+    document.getElementById('badgeModal').style.display = 'none';
+}
+
+function checkLevelBadges() {
+    if (gameState.level >= 5) unlockBadge('level_5');
+    if (gameState.level >= 7) unlockBadge('level_7');
+    if (gameState.level >= 10) unlockBadge('level_10');
+}
+
+// ========================================
+// PAGE TRACKING
+// ========================================
+function trackPageVisit(pageName) {
+    if (!gameState.pagesVisited.includes(pageName)) {
+        gameState.pagesVisited.push(pageName);
+        addXP(10, 'Visited ' + pageName.charAt(0).toUpperCase() + pageName.slice(1));
+        saveGameState();
+        
+        // Check for badges
+        if (gameState.pagesVisited.length === 1) {
+            unlockBadge('first_visit');
+        }
+        if (gameState.pagesVisited.length >= 8) {
+            unlockBadge('page_explorer');
+        }
+    }
+}
+
+// ========================================
+// QUIZ DATA
+// ========================================
+const QUIZZES = {
+    basics: {
+        title: 'Cryptocurrency Basics',
+        questions: [
+            {
+                question: 'What is blockchain technology?',
+                options: [
+                    'A type of cryptocurrency',
+                    'A distributed ledger technology',
+                    'A central bank system',
+                    'A payment processor'
+                ],
+                correct: 1,
+                explanation: 'Blockchain is a distributed ledger technology that records transactions across multiple computers securely.'
+            },
+            {
+                question: 'What does CBDC stand for?',
+                options: [
+                    'Crypto Based Digital Currency',
+                    'Central Bank Digital Currency',
+                    'Cybersecurity Bitcoin Data',
+                    'Centralized Blockchain Development'
+                ],
+                correct: 1,
+                explanation: 'CBDC stands for Central Bank Digital Currency - digital versions of fiat currency issued by central banks.'
+            },
+            {
+                question: 'What is a stablecoin?',
+                options: [
+                    'A cryptocurrency with no volatility',
+                    'A coin pegged to stable assets like USD',
+                    'Government-issued digital currency',
+                    'The original Bitcoin'
+                ],
+                correct: 1,
+                explanation: 'Stablecoins are cryptocurrencies pegged to stable assets, offering reduced volatility.'
+            },
+            {
+                question: 'What is fiat currency?',
+                options: [
+                    'Digital cryptocurrency',
+                    'Government-issued traditional money',
+                    'Gold-backed currency',
+                    'Private company money'
+                ],
+                correct: 1,
+                explanation: 'Fiat currency is government-issued money not backed by physical commodities, but by government authority.'
+            },
+            {
+                question: 'What makes cryptocurrency decentralized?',
+                options: [
+                    'Owned by one company',
+                    'Controlled by governments',
+                    'No single controlling authority',
+                    'Requires bank approval'
+                ],
+                correct: 2,
+                explanation: 'Cryptocurrency is decentralized because it operates without a single controlling authority.'
+            }
+        ]
+    },
+    'pros-cons': {
+        title: 'Crypto Advantages & Challenges',
+        questions: [
+            {
+                question: 'Which is an advantage of cryptocurrency?',
+                options: [
+                    'Price stability',
+                    'Slow transactions',
+                    'Fast borderless transactions',
+                    'Government control'
+                ],
+                correct: 2,
+                explanation: 'Fast, borderless transactions are a key advantage of cryptocurrency.'
+            },
+            {
+                question: 'What is a major challenge for cryptocurrency?',
+                options: [
+                    'Too much transparency',
+                    'Price volatility',
+                    'Instant settlement',
+                    'Low transaction fees'
+                ],
+                correct: 1,
+                explanation: 'Price volatility is a major challenge, with significant price fluctuations.'
+            },
+            {
+                question: 'What is a strength of fiat currency?',
+                options: [
+                    'Anonymous transactions',
+                    'Stability and government backing',
+                    'No inflation',
+                    'Free international transfers'
+                ],
+                correct: 1,
+                explanation: 'Fiat currency benefits from stability and government backing.'
+            },
+            {
+                question: 'Which is a limitation of fiat currency?',
+                options: [
+                    'Universal acceptance',
+                    'Consumer protection',
+                    'Slow international transfers',
+                    'Government guarantee'
+                ],
+                correct: 2,
+                explanation: 'International fiat transfers can take days, unlike crypto transactions.'
+            },
+            {
+                question: 'What does cryptocurrency offer for the unbanked?',
+                options: [
+                    'Nothing useful',
+                    'Financial inclusion',
+                    'Government loans',
+                    'Physical bank branches'
+                ],
+                correct: 1,
+                explanation: 'Cryptocurrency provides financial inclusion for those without access to traditional banking.'
+            }
+        ]
+    },
+    global: {
+        title: 'Global Crypto Impact',
+        questions: [
+            {
+                question: 'When was Bitcoin introduced?',
+                options: ['2005', '2007', '2009', '2011'],
+                correct: 2,
+                explanation: 'Bitcoin was introduced in 2009, launching blockchain technology to the world.'
+            },
+            {
+                question: 'Which country adopted Bitcoin as legal tender?',
+                options: ['United States', 'China', 'El Salvador', 'Japan'],
+                correct: 2,
+                explanation: 'El Salvador became the first country to adopt Bitcoin as legal tender in 2021.'
+            },
+            {
+                question: 'When did Ethereum launch smart contracts?',
+                options: ['2009', '2013', '2015', '2017'],
+                correct: 2,
+                explanation: 'Ethereum launched in 2015, enabling smart contracts and DeFi applications.'
+            },
+            {
+                question: 'Which region leads CBDC development?',
+                options: [
+                    'Americas',
+                    'Europe with digital euro',
+                    'Asia with digital yuan',
+                    'Africa'
+                ],
+                correct: 2,
+                explanation: 'China leads CBDC development with the digital yuan pilot program.'
+            },
+            {
+                question: 'What is the EU\'s crypto regulation called?',
+                options: ['CryptoLaw', 'MiCA', 'EuroBlock', 'DigitalAct'],
+                correct: 1,
+                explanation: 'MiCA (Markets in Crypto-Assets) is the EU\'s comprehensive crypto regulation framework.'
+            }
+        ]
+    },
+    market: {
+        title: 'Market & Adoption',
+        questions: [
+            {
+                question: 'Approximately how many crypto users are worldwide?',
+                options: ['50 million', '150 million', '420 million', '1 billion'],
+                correct: 2,
+                explanation: 'There are approximately 420 million cryptocurrency users worldwide.'
+            },
+            {
+                question: 'What is the global crypto market cap?',
+                options: [
+                    'Over $500 billion',
+                    'Over $1 trillion',
+                    'Over $2 trillion',
+                    'Over $5 trillion'
+                ],
+                correct: 2,
+                explanation: 'The global cryptocurrency market capitalization exceeds $2 trillion.'
+            },
+            {
+                question: 'What is the primary use of crypto currently?',
+                options: [
+                    'Daily purchases',
+                    'Investment and speculation',
+                    'Paying bills',
+                    'Employee salaries'
+                ],
+                correct: 1,
+                explanation: 'Despite growing adoption, crypto remains primarily focused on investment and speculation.'
+            },
+            {
+                question: 'Which companies accept cryptocurrency?',
+                options: [
+                    'None',
+                    'Only small startups',
+                    'Microsoft, PayPal, retailers',
+                    'Only in Asia'
+                ],
+                correct: 2,
+                explanation: 'Major companies like Microsoft, PayPal, and various retailers now accept cryptocurrency.'
+            },
+            {
+                question: 'What is the predicted future monetary system?',
+                options: [
+                    'Only cryptocurrency',
+                    'Only fiat currency',
+                    'Hybrid coexistence of both',
+                    'Return to gold standard'
+                ],
+                correct: 2,
+                explanation: 'Experts predict a hybrid system with coexistence of fiat, CBDCs, and cryptocurrencies.'
+            }
+        ]
+    }
+};
+
+let currentQuiz = null;
+let currentQuestionIndex = 0;
+let quizAnswers = [];
+
+// ========================================
+// QUIZ FUNCTIONS
+// ========================================
+function initializeQuiz(quizId) {
+    const quiz = QUIZZES[quizId];
+    const container = document.getElementById('quiz-' + quizId);
+    
+    if (!quiz || !container) return;
+    
+    // Check if already completed
+    if (gameState.quizzesCompleted.includes(quizId)) {
+        container.innerHTML = `
+            <div class="quiz-completed">
+                <div class="completion-badge">✅</div>
+                <h3>Quiz Completed!</h3>
+                <p>You've already completed this quiz.</p>
+                <button class="quiz-btn" onclick="retakeQuiz('${quizId}')">Retake Quiz</button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show start screen
+    container.innerHTML = `
+        <div class="quiz-start">
+            <h3>${quiz.title}</h3>
+            <p>${quiz.questions.length} questions • Earn +50 XP</p>
+            <button class="quiz-btn" onclick="startQuiz('${quizId}')">Start Quiz</button>
+        </div>
+    `;
+}
+
+function startQuiz(quizId) {
+    currentQuiz = quizId;
+    currentQuestionIndex = 0;
+    quizAnswers = [];
+    loadQuizQuestion();
+}
+
+function retakeQuiz(quizId) {
+    currentQuiz = quizId;
+    currentQuestionIndex = 0;
+    quizAnswers = [];
+    loadQuizQuestion();
+}
+
+function loadQuizQuestion() {
+    const quiz = QUIZZES[currentQuiz];
+    const container = document.getElementById('quiz-' + currentQuiz);
+    const question = quiz.questions[currentQuestionIndex];
+    
+    container.innerHTML = `
+        <div class="quiz-progress">
+            <span>Question ${currentQuestionIndex + 1} of ${quiz.questions.length}</span>
+        </div>
+        <div class="quiz-question">
+            <h3>${question.question}</h3>
+            <div class="quiz-options">
+                ${question.options.map((option, index) => `
+                    <button class="quiz-option" onclick="selectQuizAnswer(${index})" data-index="${index}">
+                        ${option}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function selectQuizAnswer(answerIndex) {
+    const quiz = QUIZZES[currentQuiz];
+    const question = quiz.questions[currentQuestionIndex];
+    const container = document.getElementById('quiz-' + currentQuiz);
+    const options = container.querySelectorAll('.quiz-option');
+    
+    // Disable all options
+    options.forEach(opt => opt.disabled = true);
+    
+    const isCorrect = answerIndex === question.correct;
+    quizAnswers.push(isCorrect);
+    
+    // Visual feedback
+    options[answerIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (!isCorrect) {
+        options[question.correct].classList.add('correct');
+    }
+    
+    // Show explanation and next button
+    setTimeout(() => {
+        const feedback = document.createElement('div');
+        feedback.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+        feedback.innerHTML = `
+            <p><strong>${isCorrect ? '✅ Correct!' : '❌ Incorrect'}</strong></p>
+            <p>${question.explanation}</p>
+            <button class="quiz-btn" onclick="nextQuizQuestion()">
+                ${currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+            </button>
+        `;
+        container.appendChild(feedback);
+    }, 500);
+}
+
+function nextQuizQuestion() {
+    const quiz = QUIZZES[currentQuiz];
+    currentQuestionIndex++;
+    
+    if (currentQuestionIndex < quiz.questions.length) {
+        loadQuizQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    const quiz = QUIZZES[currentQuiz];
+    const container = document.getElementById('quiz-' + currentQuiz);
+    const score = quizAnswers.filter(a => a).length;
+    const percentage = (score / quiz.questions.length) * 100;
+    
+    let grade = 'Good Job!';
+    let message = 'Keep learning!';
+    
+    if (percentage === 100) {
+        grade = '🏆 Perfect!';
+        message = 'Outstanding performance!';
+        unlockBadge('perfect_score');
+    } else if (percentage >= 80) {
+        grade = '⭐ Great!';
+        message = 'Excellent understanding!';
+    } else if (percentage >= 60) {
+        grade = '👍 Good!';
+        message = 'Nice work!';
+    }
+    
+    container.innerHTML = `
+        <div class="quiz-results">
+            <div class="score-circle">
+                <div class="score-number">${score}</div>
+                <div class="score-total">/ ${quiz.questions.length}</div>
+            </div>
+            <h3>${grade}</h3>
+            <p>${message}</p>
+            <p class="score-percent">${percentage}% Correct</p>
+            <button class="quiz-btn" onclick="retakeQuiz('${currentQuiz}')">Retake Quiz</button>
+        </div>
+    `;
+    
+    // Award XP and update progress (only first time)
+    if (!gameState.quizzesCompleted.includes(currentQuiz)) {
+        gameState.quizzesCompleted.push(currentQuiz);
+        addXP(50, 'Completed ' + quiz.title);
+        
+        // Check badges
+        if (gameState.quizzesCompleted.length === 1) {
+            unlockBadge('quiz_starter');
+        }
+        if (gameState.quizzesCompleted.length >= 4) {
+            unlockBadge('quiz_master');
+        }
+        
+        saveGameState();
+    }
+}
+
+// ========================================
+// INTERACTIVE PRICE CHART
+// ========================================
+let priceChart = null;
+let currentCrypto = 'bitcoin';
+let currentTimeframe = '24H';
+
+function initializePriceChart() {
+    const ctx = document.getElementById('priceChart');
+    if (!ctx) return;
+    
+    // Award XP for viewing chart
+    if (!gameState.chartViewed) {
+        gameState.chartViewed = true;
+        addXP(20, 'Viewed Price Charts');
+        unlockBadge('market_analyst');
+        saveGameState();
+    }
+    
+    // Create chart
+    priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Price (USD)',
+                data: [],
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#6366f1',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    loadChartData();
+}
+
+function switchCrypto(crypto) {
+    currentCrypto = crypto;
+    
+    // Update button states
+    document.querySelectorAll('.crypto-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    loadChartData();
+}
+
+function changeTimeframe(timeframe) {
+    currentTimeframe = timeframe;
+    
+    // Update button states
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    loadChartData();
+}
+
+async function loadChartData() {
+    if (!priceChart) return;
+    
+    // Generate simulated historical data based on current price
+    const currentPrice = currentCrypto === 'bitcoin' ? 
+        (cryptoPrices.bitcoin?.usd || 96500) : 
+        (cryptoPrices.ethereum?.usd || 3450);
+    
+    let dataPoints = 24;
+    let labels = [];
+    let data = [];
+    
+    // Adjust based on timeframe
+    switch(currentTimeframe) {
+        case '1H':
+            dataPoints = 12;
+            for (let i = dataPoints; i >= 0; i--) {
+                labels.push((i * 5) + 'm ago');
+                data.push(currentPrice * (1 + (Math.random() - 0.5) * 0.01));
+            }
+            break;
+        case '24H':
+            dataPoints = 24;
+            for (let i = dataPoints; i >= 0; i--) {
+                labels.push(i + 'h ago');
+                data.push(currentPrice * (1 + (Math.random() - 0.5) * 0.02));
+            }
+            break;
+        case '7D':
+            dataPoints = 7;
+            for (let i = dataPoints; i >= 0; i--) {
+                labels.push(i + 'd ago');
+                data.push(currentPrice * (1 + (Math.random() - 0.5) * 0.05));
+            }
+            break;
+        case '30D':
+            dataPoints = 30;
+            for (let i = dataPoints; i >= 0; i--) {
+                labels.push(i + 'd ago');
+                data.push(currentPrice * (1 + (Math.random() - 0.5) * 0.1));
+            }
+            break;
+    }
+    
+    // Update chart
+    priceChart.data.labels = labels.reverse();
+    priceChart.data.datasets[0].data = data.reverse();
+    priceChart.update();
+    
+    // Update stats
+    const high = Math.max(...data);
+    const low = Math.min(...data);
+    const change = ((data[data.length - 1] - data[0]) / data[0]) * 100;
+    
+    document.getElementById('chartPrice').textContent = '$' + currentPrice.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    const changeEl = document.getElementById('chartChange');
+    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    changeEl.className = 'stat-value ' + (change >= 0 ? 'positive' : 'negative');
+    
+    document.getElementById('chartHigh').textContent = '$' + high.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    document.getElementById('chartLow').textContent = '$' + low.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
 
 // ========================================
 // PAGE NAVIGATION SYSTEM
@@ -33,6 +806,23 @@ function showPage(pageName) {
         activeLink.classList.add('active');
     }
     
+    // Track page visit for XP
+    trackPageVisit(pageName);
+    
+    // Initialize page-specific content
+    if (pageName === 'basics') {
+        initializeQuiz('basics');
+    } else if (pageName === 'pros-cons') {
+        initializeQuiz('pros-cons');
+    } else if (pageName === 'global') {
+        initializeQuiz('global');
+    } else if (pageName === 'market') {
+        initializeQuiz('market');
+        if (!priceChart) {
+            setTimeout(() => initializePriceChart(), 100);
+        }
+    }
+    
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
@@ -58,12 +848,6 @@ function toggleTheme() {
         localStorage.setItem('theme', 'light');
     }
 }
-
-// Load saved theme preference on page load
-window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.body.className = savedTheme + '-mode';
-});
 
 // ========================================
 // MOBILE MENU TOGGLE
@@ -120,6 +904,11 @@ async function fetchCryptoPrices() {
         nextUpdateTime = new Date(lastFetchTime.getTime() + UPDATE_INTERVAL);
         
         updatePriceTicker();
+        
+        // Update chart if visible
+        if (priceChart && document.getElementById('page-market').classList.contains('active')) {
+            loadChartData();
+        }
         
         console.log('Crypto Prices Updated:', {
             bitcoin: cryptoPrices.bitcoin,
@@ -255,7 +1044,42 @@ function calculateROI() {
     `;
 
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Award XP for using calculator
+    if (!gameState.calculatorUsed) {
+        gameState.calculatorUsed = true;
+        addXP(20, 'Used ROI Calculator');
+        unlockBadge('calculator_pro');
+        saveGameState();
+    }
 }
+
+// ========================================
+// TOOLTIP TRACKING
+// ========================================
+function trackTooltipHover() {
+    gameState.tooltipsDiscovered++;
+    saveGameState();
+    
+    if (gameState.tooltipsDiscovered >= 5) {
+        unlockBadge('tooltip_hunter');
+    }
+}
+
+// ========================================
+// SESSION TIME TRACKING
+// ========================================
+function checkSessionTime() {
+    const sessionDuration = Date.now() - gameState.sessionStartTime;
+    const minutes = sessionDuration / 1000 / 60;
+    
+    if (minutes >= 30 && !gameState.badges.includes('dedicated_learner')) {
+        unlockBadge('dedicated_learner');
+    }
+}
+
+// Check session time every minute
+setInterval(checkSessionTime, 60000);
 
 // ========================================
 // ANIMATE ELEMENTS ON SCROLL
@@ -289,6 +1113,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const navLinks = document.getElementById('navLinks');
         if (navLinks) navLinks.classList.remove('active');
+        closeBadgeModal();
     }
     
     if (e.key === 'Enter' && (
@@ -332,23 +1157,32 @@ window.addEventListener('resize', () => {
 });
 
 // ========================================
-// TOOLTIP ACCESSIBILITY
+// TOOLTIP ACCESSIBILITY & TRACKING
 // ========================================
-document.querySelectorAll('.tooltip').forEach(tooltip => {
-    tooltip.setAttribute('tabindex', '0');
-    tooltip.addEventListener('focus', function() {
-        const tooltipText = this.querySelector('.tooltiptext');
-        if (tooltipText) {
-            tooltipText.style.visibility = 'visible';
-            tooltipText.style.opacity = '1';
-        }
-    });
-    tooltip.addEventListener('blur', function() {
-        const tooltipText = this.querySelector('.tooltiptext');
-        if (tooltipText) {
-            tooltipText.style.visibility = 'hidden';
-            tooltipText.style.opacity = '0';
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tooltip').forEach(tooltip => {
+        tooltip.setAttribute('tabindex', '0');
+        
+        const handleTooltipInteraction = () => {
+            trackTooltipHover();
+        };
+        
+        tooltip.addEventListener('mouseenter', handleTooltipInteraction);
+        tooltip.addEventListener('focus', function() {
+            const tooltipText = this.querySelector('.tooltiptext');
+            if (tooltipText) {
+                tooltipText.style.visibility = 'visible';
+                tooltipText.style.opacity = '1';
+            }
+            handleTooltipInteraction();
+        });
+        tooltip.addEventListener('blur', function() {
+            const tooltipText = this.querySelector('.tooltiptext');
+            if (tooltipText) {
+                tooltipText.style.visibility = 'hidden';
+                tooltipText.style.opacity = '0';
+            }
+        });
     });
 });
 
@@ -383,11 +1217,27 @@ if (yearsInput) {
 }
 
 // ========================================
+// CLOSE MODAL ON OUTSIDE CLICK
+// ========================================
+window.onclick = function(event) {
+    const modal = document.getElementById('badgeModal');
+    if (event.target == modal) {
+        closeBadgeModal();
+    }
+}
+
+// ========================================
 // INITIALIZATION
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('loaded');
-    console.log('🚀 CryptoShifts - Loaded Successfully!');
+    
+    // Load theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = savedTheme + '-mode';
+    
+    // Load game state
+    loadGameState();
     
     // Initialize price fetching system
     initializePriceFetching();
@@ -398,10 +1248,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show home page by default
     showPage('home');
     
+    console.log('🚀 CryptoShifts - Loaded Successfully with Gamification!');
     console.log('%c🔗 CryptoShifts', 'font-size: 24px; font-weight: bold; color: #6366f1;');
     console.log('%cUnderstanding the Future of Money', 'font-size: 14px; color: #8b5cf6;');
     console.log('%cCreated by: Mili, Haleigh, Boris, and Amina', 'font-size: 12px; color: #64748b;');
     console.log('%cRochester Institute of Technology - 2025', 'font-size: 12px; color: #64748b;');
+    console.log('%c🎮 Gamification Active: Earn XP and unlock badges!', 'font-size: 14px; color: #10b981; font-weight: bold;');
 });
 
 // ========================================
