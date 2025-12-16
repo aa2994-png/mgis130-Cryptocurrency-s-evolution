@@ -185,13 +185,17 @@ body.dark-mode {
 .modal-content {
     background: var(--bg-light);
     margin: 5% auto;
-    padding: 2rem;
+    padding: 0;
     width: 90%;
     max-width: 900px;
+    max-height: 85vh;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     position: relative;
     animation: modalSlideIn 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 body.dark-mode .modal-content {
@@ -211,11 +215,16 @@ body.dark-mode .modal-content {
 
 .close {
     color: #aaa;
-    float: right;
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
     transition: color 0.3s;
+    z-index: 110;
+    background: transparent;
+    padding: 0;
 }
 
 .close:hover,
@@ -225,14 +234,51 @@ body.dark-mode .modal-content {
 
 .modal-content h2 {
     text-align: center;
-    margin-bottom: 2rem;
+    margin: 0;
+    padding: 2rem 2rem 1.5rem 2rem;
     color: var(--primary-color);
+    background: var(--bg-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .modal-content h2 {
+    background: var(--bg-dark);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .badges-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: calc(85vh - 100px);
+}
+
+/* Custom scrollbar styling */
+.badges-grid::-webkit-scrollbar {
+    width: 10px;
+}
+
+.badges-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+body.dark-mode .badges-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.badges-grid::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+.badges-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
 }
 
 .badge-card {
@@ -1560,7 +1606,6 @@ body.dark-mode .section-market .content-paragraph h3 {
     .modal-content {
         width: 95%;
         margin: 10% auto;
-        padding: 1.5rem;
     }
     
     .chart-controls {
