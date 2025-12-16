@@ -14,20 +14,20 @@ const LEVELS = [
     { level: 2, xpRequired: 100, title: "Beginner Trader" },
     { level: 3, xpRequired: 250, title: "Learning Investor" },
     { level: 4, xpRequired: 450, title: "Crypto Enthusiast" },
-    { level: 5, xpRequired: 700, title: "Crypto Master" }
+    { level: 5, xpRequired: 620, title: "Crypto Master" }
 ];
 
 const BADGES = [
-    { id: 'first_visit', name: 'First Steps', icon: '🚀', description: 'Visit CryptoShifts for the first time', xp: 10 },
-    { id: 'page_explorer', name: 'Page Explorer', icon: '🗺️', description: 'Visit all pages', xp: 50 },
-    { id: 'quiz_starter', name: 'Quiz Starter', icon: '📝', description: 'Complete your first quiz', xp: 50 },
-    { id: 'quiz_master', name: 'Quiz Master', icon: '🎓', description: 'Complete all 4 quizzes', xp: 100 },
-    { id: 'perfect_score', name: 'Perfect Score', icon: '💯', description: 'Get 100% on any quiz', xp: 75 },
-    { id: 'calculator_pro', name: 'Calculator Pro', icon: '🧮', description: 'Use the ROI calculator', xp: 20 },
-    { id: 'market_analyst', name: 'Market Analyst', icon: '📊', description: 'View interactive price charts', xp: 20 },
-    { id: 'tooltip_hunter', name: 'Tooltip Hunter', icon: '🔍', description: 'Discover 5 tooltips', xp: 15 },
-    { id: 'level_5', name: 'Crypto Master', icon: '👑', description: 'Reach Level 5 - Maximum Level!', xp: 0 },
-    { id: 'dedicated_learner', name: 'Dedicated Learner', icon: '📚', description: 'Spend 30 minutes on the site', xp: 50 }
+    { id: 'first_visit', name: 'First Steps', icon: '<i class="ph ph-rocket-launch"></i>', description: 'Visit CryptoShifts for the first time', xp: 10 },
+    { id: 'page_explorer', name: 'Page Explorer', icon: '<i class="ph ph-map-trifold"></i>', description: 'Visit all pages', xp: 50 },
+    { id: 'quiz_starter', name: 'Quiz Starter', icon: '<i class="ph ph-note-pencil"></i>', description: 'Complete your first quiz', xp: 50 },
+    { id: 'quiz_master', name: 'Quiz Master', icon: '<i class="ph ph-graduation-cap"></i>', description: 'Complete all 4 quizzes', xp: 100 },
+    { id: 'perfect_score', name: 'Perfect Score', icon: '<i class="ph ph-seal-check"></i>', description: 'Get 100% on any quiz', xp: 75 },
+    { id: 'calculator_pro', name: 'Calculator Pro', icon: '<i class="ph ph-calculator"></i>', description: 'Use the ROI calculator', xp: 20 },
+    { id: 'market_analyst', name: 'Market Analyst', icon: '<i class="ph ph-chart-line-up"></i>', description: 'View interactive price charts', xp: 20 },
+    { id: 'tooltip_hunter', name: 'Tooltip Hunter', icon: '<i class="ph ph-magnifying-glass"></i>', description: 'Discover 5 tooltips', xp: 15 },
+    { id: 'level_5', name: 'Crypto Master', icon: '<i class="ph ph-crown"></i>', description: 'Reach Level 5 - Maximum Level!', xp: 0 },
+    { id: 'dedicated_learner', name: 'Dedicated Learner', icon: '<i class="ph ph-books"></i>', description: 'Spend 30 minutes on the site', xp: 50 }
 ];
 
 let gameState = {
@@ -64,6 +64,11 @@ function loadGameState() {
             return validBadgeIds.includes(badgeId) && !invalidBadges.includes(badgeId);
         });
         
+        // Cap XP at maximum achievable (670)
+        if (gameState.xp > 670) {
+            gameState.xp = 670;
+        }
+        
         // Save the cleaned state
         saveGameState();
     }
@@ -76,6 +81,11 @@ function loadGameState() {
 // ========================================
 function addXP(amount, reason) {
     gameState.xp += amount;
+    
+    // Cap XP at 670 (max achievable)
+    if (gameState.xp > 670) {
+        gameState.xp = 670;
+    }
     
     // Check for level up
     const newLevel = calculateLevel(gameState.xp);
@@ -116,7 +126,8 @@ function updateXPDisplay() {
         const progress = ((gameState.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
         document.getElementById('xpProgressFill').style.width = Math.min(progress, 100) + '%';
     } else {
-        document.getElementById('nextLevelXP').textContent = 'MAX';
+        // At max level, show total XP instead of "MAX"
+        document.getElementById('nextLevelXP').textContent = '670';
         document.getElementById('xpProgressFill').style.width = '100%';
     }
 }
@@ -194,7 +205,7 @@ function openBadgeModal() {
         const badgeCard = document.createElement('div');
         badgeCard.className = 'badge-card' + (unlocked ? ' unlocked' : ' locked');
         badgeCard.innerHTML = `
-            <div class="badge-icon-large">${unlocked ? badge.icon : '🔒'}</div>
+            <div class="badge-icon-large">${unlocked ? badge.icon : '<i class="ph ph-lock"></i>'}</div>
             <h4>${badge.name}</h4>
             <p>${badge.description}</p>
             ${badge.xp > 0 ? `<span class="badge-xp">+${badge.xp} XP</span>` : ''}
