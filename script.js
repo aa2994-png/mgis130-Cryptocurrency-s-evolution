@@ -635,6 +635,11 @@ function initializePriceChart() {
         saveGameState();
     }
     
+    // Get theme for colors
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const textColor = isDarkMode ? '#e2e8f0' : '#001F3F';
+    const gridColor = isDarkMode ? 'rgba(148, 163, 184, 0.15)' : 'rgba(0, 31, 63, 0.1)';
+    
     // Create chart
     priceChart = new Chart(ctx, {
         type: 'line',
@@ -643,10 +648,11 @@ function initializePriceChart() {
             datasets: [{
                 label: 'Price (USD)',
                 data: [],
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderColor: '#1E488F',
+                backgroundColor: 'rgba(30, 72, 143, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                borderWidth: 3
             }]
         },
         options: {
@@ -659,19 +665,39 @@ function initializePriceChart() {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#6366f1',
-                    borderWidth: 1
+                    backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: textColor,
+                    bodyColor: textColor,
+                    borderColor: '#1E488F',
+                    borderWidth: 2
                 }
             },
             scales: {
+                x: {
+                    ticks: {
+                        color: textColor,
+                        font: {
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
                 y: {
                     ticks: {
+                        color: textColor,
+                        font: {
+                            size: 13,
+                            weight: 'bold'
+                        },
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
+                    },
+                    grid: {
+                        color: gridColor
                     }
                 }
             }
@@ -752,6 +778,20 @@ async function loadChartData() {
     // Update chart
     priceChart.data.labels = labels.reverse();
     priceChart.data.datasets[0].data = data.reverse();
+    
+    // Update chart colors based on theme
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const textColor = isDarkMode ? '#e2e8f0' : '#001F3F';
+    const gridColor = isDarkMode ? 'rgba(148, 163, 184, 0.15)' : 'rgba(0, 31, 63, 0.1)';
+    
+    priceChart.options.scales.x.ticks.color = textColor;
+    priceChart.options.scales.y.ticks.color = textColor;
+    priceChart.options.scales.x.grid.color = gridColor;
+    priceChart.options.scales.y.grid.color = gridColor;
+    priceChart.options.plugins.tooltip.backgroundColor = isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    priceChart.options.plugins.tooltip.titleColor = textColor;
+    priceChart.options.plugins.tooltip.bodyColor = textColor;
+    
     priceChart.update();
     
     // Update stats
@@ -846,6 +886,23 @@ function toggleTheme() {
         body.classList.remove('dark-mode');
         body.classList.add('light-mode');
         localStorage.setItem('theme', 'light');
+    }
+    
+    // Update chart if it exists
+    if (priceChart) {
+        const isDarkMode = body.classList.contains('dark-mode');
+        const textColor = isDarkMode ? '#e2e8f0' : '#001F3F';
+        const gridColor = isDarkMode ? 'rgba(148, 163, 184, 0.15)' : 'rgba(0, 31, 63, 0.1)';
+        
+        priceChart.options.scales.x.ticks.color = textColor;
+        priceChart.options.scales.y.ticks.color = textColor;
+        priceChart.options.scales.x.grid.color = gridColor;
+        priceChart.options.scales.y.grid.color = gridColor;
+        priceChart.options.plugins.tooltip.backgroundColor = isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+        priceChart.options.plugins.tooltip.titleColor = textColor;
+        priceChart.options.plugins.tooltip.bodyColor = textColor;
+        
+        priceChart.update();
     }
 }
 
