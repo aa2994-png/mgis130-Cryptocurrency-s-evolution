@@ -340,13 +340,14 @@ body.dark-mode .badge-card.locked {
 .crypto-ticker {
     background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
     color: var(--bg-light);
-    padding: 0.75rem 0;
+    padding: 0.75rem 0 0.5rem 0;
     overflow: hidden;
     position: fixed;
     top: 80px;
     width: 100%;
     z-index: 999;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .ticker-container {
@@ -384,7 +385,7 @@ body.dark-mode .badge-card.locked {
    ======================================== */
 nav {
     position: fixed;
-    top: 130px;
+    top: 126px;
     width: 100%;
     background: rgba(246, 247, 237, 0.95);
     backdrop-filter: blur(10px);
@@ -465,7 +466,7 @@ body.dark-mode .nav-links a.active {
    ======================================== */
 .container {
     max-width: 1200px;
-    margin: 230px auto 0;
+    margin: 224px auto 0;
     padding: 2rem;
 }
 
@@ -1506,11 +1507,11 @@ body.dark-mode .section-market .content-paragraph h3 {
     }
     
     nav {
-        top: 110px;
+        top: 104px;
     }
     
     .container {
-        margin-top: 180px;
+        margin-top: 174px;
         padding: 1rem;
     }
 
