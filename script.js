@@ -54,6 +54,18 @@ function loadGameState() {
     if (saved) {
         gameState = JSON.parse(saved);
         gameState.sessionStartTime = Date.now(); // Reset session timer
+        
+        // Auto-migration: Remove invalid badges if they exist
+        const validBadgeIds = BADGES.map(b => b.id);
+        const invalidBadges = ['level_7', 'elite_trader', 'level_10'];
+        
+        // Filter out any invalid badges
+        gameState.badges = gameState.badges.filter(badgeId => {
+            return validBadgeIds.includes(badgeId) && !invalidBadges.includes(badgeId);
+        });
+        
+        // Save the cleaned state
+        saveGameState();
     }
     updateXPDisplay();
     updateBadgeCount();
@@ -167,7 +179,8 @@ function showBadgeUnlockNotification(badge) {
 }
 
 function updateBadgeCount() {
-    document.getElementById('badgeCount').textContent = gameState.badges.length;
+    const totalBadges = BADGES.length; // This will be 10
+    document.getElementById('badgeCount').textContent = `${gameState.badges.length}/${totalBadges}`;
 }
 
 function openBadgeModal() {
