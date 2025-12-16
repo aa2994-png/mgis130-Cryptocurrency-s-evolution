@@ -14,12 +14,7 @@ const LEVELS = [
     { level: 2, xpRequired: 100, title: "Beginner Trader" },
     { level: 3, xpRequired: 250, title: "Learning Investor" },
     { level: 4, xpRequired: 450, title: "Crypto Enthusiast" },
-    { level: 5, xpRequired: 700, title: "Market Analyst" },
-    { level: 6, xpRequired: 1000, title: "Blockchain Expert" },
-    { level: 7, xpRequired: 1400, title: "DeFi Pioneer" },
-    { level: 8, xpRequired: 1900, title: "Crypto Veteran" },
-    { level: 9, xpRequired: 2500, title: "Master Trader" },
-    { level: 10, xpRequired: 3200, title: "Crypto Master" }
+    { level: 5, xpRequired: 700, title: "Crypto Master" }
 ];
 
 const BADGES = [
@@ -31,9 +26,7 @@ const BADGES = [
     { id: 'calculator_pro', name: 'Calculator Pro', icon: '🧮', description: 'Use the ROI calculator', xp: 20 },
     { id: 'market_analyst', name: 'Market Analyst', icon: '📊', description: 'View interactive price charts', xp: 20 },
     { id: 'tooltip_hunter', name: 'Tooltip Hunter', icon: '🔍', description: 'Discover 5 tooltips', xp: 15 },
-    { id: 'level_5', name: 'Expert Status', icon: '⭐', description: 'Reach Level 5', xp: 0 },
-    { id: 'level_7', name: 'Elite Trader', icon: '💎', description: 'Reach Level 7', xp: 0 },
-    { id: 'level_10', name: 'Crypto Master', icon: '👑', description: 'Reach Level 10', xp: 0 },
+    { id: 'level_5', name: 'Crypto Master', icon: '👑', description: 'Reach Level 5 - Maximum Level!', xp: 0 },
     { id: 'dedicated_learner', name: 'Dedicated Learner', icon: '📚', description: 'Spend 30 minutes on the site', xp: 50 }
 ];
 
@@ -205,8 +198,6 @@ function closeBadgeModal() {
 
 function checkLevelBadges() {
     if (gameState.level >= 5) unlockBadge('level_5');
-    if (gameState.level >= 7) unlockBadge('level_7');
-    if (gameState.level >= 10) unlockBadge('level_10');
 }
 
 // ========================================
